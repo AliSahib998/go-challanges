@@ -55,7 +55,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 			return []byte(os.Getenv("Token_Key")), nil
 		})
 
-		if err != nil { //Malformed token, returns with http code 403 as usual
+		if err != nil {
 			customError = util.ErrorResponse{Code: 403, Message: "Malformed Authentication token"}
 			util.ErrorHandler(w, customError)
 			return
