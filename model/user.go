@@ -4,13 +4,7 @@ import "github.com/jinzhu/gorm"
 
 type User struct {
 	gorm.Model
-	Username string `json:"username" validate:"required,lte=5`
-	Password string `json:"password" validate:"required`
-	Token    string `json:"token"`
-}
-
-type Test struct {
-	Username string `json:"username" validate:"required,lte=5`
-	Password string `json:"password" validate:"required`
+	Username string `json:"username" validate:"required,gte=5,lte=10"`
+	Password string `json:"password" validate:"required"`
 	Token    string `json:"token"`
 }

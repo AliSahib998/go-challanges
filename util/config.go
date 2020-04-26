@@ -2,6 +2,7 @@ package util
 
 import (
 	"encoding/json"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
@@ -33,9 +34,10 @@ func ErrorHandler(w http.ResponseWriter, err ErrorResponse) {
 }
 
 func DecodeJson(r io.Reader, data interface{}) ErrorResponse {
-	err := json.NewDecoder(r).Decode(data)
+	err := json.NewDecoder(r).Decode(&data)
 	if err != nil {
 		log.Error("json parse exception", err)
+		fmt.Println(err)
 		return ErrorResponse{Code: 400, Message: "Parse Exception"}
 	}
 

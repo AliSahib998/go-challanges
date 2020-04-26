@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"github.com/AliSahib998/go-challanges/model"
 	"github.com/AliSahib998/go-challanges/repo"
 	"github.com/AliSahib998/go-challanges/service"
@@ -21,6 +22,7 @@ func NewHandler(router *chi.Mux) *chi.Mux {
 		userService: &service.UserService{UserRepo: &repo.UserRepo{}},
 	}
 	router.Post(rootPath, h.createUser)
+	router.Post(rootPath+"/login", h.login)
 
 	return router
 }
@@ -32,14 +34,38 @@ func (u *userHandler) createUser(w http.ResponseWriter, r *http.Request) {
 
 	if err.Code > 0 {
 		util.ErrorHandler(w, err)
+		return
 	}
 
 	err = u.userService.CreateUser(user)
 
 	if err.Code > 0 {
 		util.ErrorHandler(w, err)
+		return
 	}
 	w.Header().Add("Content-Type", "application/json")
 
 	log.Info("end createUser")
+}
+
+func (u *userHandler) login(w http.ResponseWriter, r *http.Request) {
+	log.Info("start sign In")
+	var user model.User
+	err := util.DecodeJson(r.Body, &user)
+
+	if err.Code > 0 {
+		util.ErrorHandler(w, err)
+		return
+	}
+
+	authToken, err := u.userService.Login(user)
+
+	if err.Code > 0 {
+		util.ErrorHandler(w, err)
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(authToken)
+
+	log.Info("end sign In")
 }

@@ -5,8 +5,10 @@ import (
 	"github.com/AliSahib998/go-challanges/model"
 	"github.com/AliSahib998/go-challanges/repo"
 	"github.com/AliSahib998/go-challanges/util"
+	"github.com/dgrijalva/jwt-go"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
+	"os"
 )
 
 type UserService struct {
@@ -15,12 +17,23 @@ type UserService struct {
 
 type IUserService interface {
 	CreateUser(user model.User) util.ErrorResponse
+	Login(user model.User) (model.AuthToken, util.ErrorResponse)
 }
 
 func (u *UserService) CreateUser(user model.User) util.ErrorResponse {
-	log.Debug("check username to exist")
-	fmt.Println(user.Username, user.Password, user.Token)
-	var res = u.UserRepo.GetUser(user.Username)
+
+	//validation
+	log.Debug("validation check")
+	var errorMap = util.Validation(user)
+
+	if len(errorMap) > 0 {
+		log.Debug("validation error")
+		return util.ErrorResponse{Code: 400, ValidationError: errorMap}
+	}
+
+	//check username
+	log.Debug("check username is existing")
+	var res = u.UserRepo.GetUserByUsername(user.Username)
 
 	if res.ID != 0 {
 		return util.ErrorResponse{Code: 403, Message: "username is exist"}
@@ -34,9 +47,29 @@ func (u *UserService) CreateUser(user model.User) util.ErrorResponse {
 	err := u.UserRepo.CreateUser(user)
 
 	if err != nil {
-		log.Debug("error occured", err.Error())
-		return util.ErrorResponse{Code: 500, Message: "error occured"}
+		log.Debug("error occurred", err.Error())
+		return util.ErrorResponse{Code: 500, Message: "error occurred"}
 	}
 
 	return util.ErrorResponse{}
+}
+
+func (u *UserService) Login(user model.User) (model.AuthToken, util.ErrorResponse) {
+
+	//check username and password
+	log.Debug("checking process for sign in")
+	var res = u.UserRepo.GetUserByUsername(user.Username)
+	err := bcrypt.CompareHashAndPassword([]byte(res.Password), []byte(user.Password))
+	fmt.Println(err)
+
+	if err != nil {
+		return model.AuthToken{}, util.ErrorResponse{Code: 404, Message: "username and password are wrong"}
+	}
+
+	//jwt token create
+	tk := model.Token{Username: res.Username}
+	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
+	tokenString, _ := token.SignedString([]byte(os.Getenv("Token_Key")))
+
+	return model.AuthToken{Username: res.Username, AuthToken: tokenString}, util.ErrorResponse{}
 }
