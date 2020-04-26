@@ -17,7 +17,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 
 		authIgnore := []string{"/user", "/user/login", "/health"}
 		requestPath := r.URL.Path
-		var customError util.ErrorResponse
+		var customError util.RestErrorResponse
 
 		for _, value := range authIgnore {
 
@@ -30,20 +30,20 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		tokenHeader := r.Header.Get("Authorization")
 
 		if tokenHeader == "" {
-			customError = util.ErrorResponse{Code: 403, Message: "Missing Token"}
+			customError = util.RestErrorResponse{Code: 403, Message: "Missing Token"}
 			util.ErrorHandler(w, customError)
 			return
 		}
 
 		tokenSplit := strings.Split(tokenHeader, " ")
 		if len(tokenSplit) != 2 {
-			customError = util.ErrorResponse{Code: 403, Message: "Wrong Token Header"}
+			customError = util.RestErrorResponse{Code: 403, Message: "Wrong Token Header"}
 			util.ErrorHandler(w, customError)
 			return
 		}
 
 		if tokenSplit[0] != "Bearer" {
-			customError = util.ErrorResponse{Code: 403, Message: "Wrong Token Header"}
+			customError = util.RestErrorResponse{Code: 403, Message: "Wrong Token Header"}
 			util.ErrorHandler(w, customError)
 			return
 		}
@@ -56,13 +56,13 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		})
 
 		if err != nil {
-			customError = util.ErrorResponse{Code: 403, Message: "Malformed Authentication token"}
+			customError = util.RestErrorResponse{Code: 403, Message: "Malformed Authentication token"}
 			util.ErrorHandler(w, customError)
 			return
 		}
 
 		if !token.Valid {
-			customError = util.ErrorResponse{Code: 403, Message: "Token is wrong"}
+			customError = util.RestErrorResponse{Code: 403, Message: "Token is wrong"}
 			util.ErrorHandler(w, customError)
 			return
 		}

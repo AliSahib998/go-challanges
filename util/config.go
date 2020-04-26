@@ -9,7 +9,7 @@ import (
 )
 import "github.com/joho/godotenv"
 
-type ErrorResponse struct {
+type RestErrorResponse struct {
 	Code            int
 	Message         string
 	ValidationError map[string]interface{}
@@ -27,19 +27,19 @@ func InitEnvVars() {
 	}
 }
 
-func ErrorHandler(w http.ResponseWriter, err ErrorResponse) {
+func ErrorHandler(w http.ResponseWriter, err RestErrorResponse) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(err.Code)
 	json.NewEncoder(w).Encode(err)
 }
 
-func DecodeJson(r io.Reader, data interface{}) ErrorResponse {
+func DecodeJson(r io.Reader, data interface{}) RestErrorResponse {
 	err := json.NewDecoder(r).Decode(&data)
 	if err != nil {
 		log.Error("json parse exception", err)
 		fmt.Println(err)
-		return ErrorResponse{Code: 400, Message: "Parse Exception"}
+		return RestErrorResponse{Code: 400, Message: "Parse Exception"}
 	}
 
-	return ErrorResponse{}
+	return RestErrorResponse{}
 }

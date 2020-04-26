@@ -13,8 +13,6 @@ var validate = validator.New()
 
 func Validation(data interface{}) map[string]interface{} {
 
-	fmt.Println(data)
-
 	en := en.New()
 	uni := ut.New(en, en)
 

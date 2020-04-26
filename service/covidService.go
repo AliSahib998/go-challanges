@@ -12,10 +12,10 @@ type CovidService struct {
 }
 
 type ICovidService interface {
-	GetCovidData() ([]model.Covid, util.ErrorResponse)
+	GetCovidData() ([]model.Covid, util.RestErrorResponse)
 }
 
-func (c *CovidService) GetCovidData() ([]model.Covid, util.ErrorResponse) {
+func (c *CovidService) GetCovidData() ([]model.Covid, util.RestErrorResponse) {
 
 	log.Debug("start GetCovidData")
 
@@ -27,5 +27,5 @@ func (c *CovidService) GetCovidData() ([]model.Covid, util.ErrorResponse) {
 
 	log.Debug("end GetCovidData")
 
-	return resp, util.ErrorResponse{}
+	return resp, util.RestErrorResponse{}
 }

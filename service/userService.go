@@ -16,11 +16,11 @@ type UserService struct {
 }
 
 type IUserService interface {
-	CreateUser(user model.User) util.ErrorResponse
-	Login(user model.User) (model.AuthToken, util.ErrorResponse)
+	CreateUser(user model.User) util.RestErrorResponse
+	Login(user model.User) (model.AuthToken, util.RestErrorResponse)
 }
 
-func (u *UserService) CreateUser(user model.User) util.ErrorResponse {
+func (u *UserService) CreateUser(user model.User) util.RestErrorResponse {
 
 	//validation
 	log.Debug("validation check")
@@ -28,7 +28,7 @@ func (u *UserService) CreateUser(user model.User) util.ErrorResponse {
 
 	if len(errorMap) > 0 {
 		log.Debug("validation error")
-		return util.ErrorResponse{Code: 400, ValidationError: errorMap}
+		return util.RestErrorResponse{Code: 400, ValidationError: errorMap}
 	}
 
 	//check username
@@ -36,7 +36,7 @@ func (u *UserService) CreateUser(user model.User) util.ErrorResponse {
 	var res = u.UserRepo.GetUserByUsername(user.Username)
 
 	if res.ID != 0 {
-		return util.ErrorResponse{Code: 403, Message: "username is exist"}
+		return util.RestErrorResponse{Code: 403, Message: "username is exist"}
 	}
 
 	//encrypt password
@@ -48,13 +48,13 @@ func (u *UserService) CreateUser(user model.User) util.ErrorResponse {
 
 	if err != nil {
 		log.Debug("error occurred", err.Error())
-		return util.ErrorResponse{Code: 500, Message: "error occurred"}
+		return util.RestErrorResponse{Code: 500, Message: "error occurred"}
 	}
 
-	return util.ErrorResponse{}
+	return util.RestErrorResponse{}
 }
 
-func (u *UserService) Login(user model.User) (model.AuthToken, util.ErrorResponse) {
+func (u *UserService) Login(user model.User) (model.AuthToken, util.RestErrorResponse) {
 
 	//check username and password
 	log.Debug("checking process for sign in")
@@ -63,7 +63,7 @@ func (u *UserService) Login(user model.User) (model.AuthToken, util.ErrorRespons
 	fmt.Println(err)
 
 	if err != nil {
-		return model.AuthToken{}, util.ErrorResponse{Code: 404, Message: "username and password are wrong"}
+		return model.AuthToken{}, util.RestErrorResponse{Code: 404, Message: "username and password are wrong"}
 	}
 
 	//jwt token create
@@ -71,5 +71,5 @@ func (u *UserService) Login(user model.User) (model.AuthToken, util.ErrorRespons
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("Token_Key")))
 
-	return model.AuthToken{Username: res.Username, AuthToken: tokenString}, util.ErrorResponse{}
+	return model.AuthToken{Username: res.Username, AuthToken: tokenString}, util.RestErrorResponse{}
 }
